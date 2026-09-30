@@ -47,9 +47,8 @@ def setup_logging(script_name: str) -> logging.Logger:
 def get_connection() -> sqlite3.Connection:
     """
     Returns a SQLite connection to the processed database.
-    Phase 2: swap this out for a SQLAlchemy engine pointed at RDS —
-    keep the function signature/usage the same in the other scripts
-    so the swap is a one-file change.
+    Every script connects through here, so moving to PostgreSQL changes the
+    connection in one place. The SQL itself would still need porting.
     """
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     return sqlite3.connect(DB_PATH)

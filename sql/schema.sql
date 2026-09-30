@@ -1,12 +1,12 @@
 -- Schema for the NYC Financial & Real Estate Data Pipeline
--- Works as-is in SQLite (Phase 1). For Phase 2 (RDS PostgreSQL), swap
--- INTEGER PRIMARY KEY AUTOINCREMENT -> SERIAL PRIMARY KEY, and REAL -> NUMERIC
--- where precision matters.
+-- Written for SQLite. For PostgreSQL, swap INTEGER PRIMARY KEY AUTOINCREMENT
+-- -> SERIAL PRIMARY KEY, and REAL -> NUMERIC where precision matters.
 
 DROP TABLE IF EXISTS daily_returns;
 DROP TABLE IF EXISTS daily_prices;
 DROP TABLE IF EXISTS nyc_property_sales;
 DROP TABLE IF EXISTS companies;
+DROP TABLE IF EXISTS pipeline_meta;
 
 CREATE TABLE companies (
     ticker        TEXT PRIMARY KEY,
@@ -53,6 +53,13 @@ CREATE TABLE nyc_property_sales (
     UNIQUE(borough, block, lot, sale_date, sale_price)   -- natural key: one row per sale
 );
 
--- Indexes worth adding once the tables are loaded and you're tuning query speed:
--- CREATE INDEX idx_daily_prices_ticker_date ON daily_prices(ticker, date);
--- CREATE INDEX idx_property_borough_date ON nyc_property_sales(borough, sale_date);
+-- Provenance for the current load: data_source ('real' or 'demo') and the
+-- ingest lineage (source, dropped, kept, duplicate and per-borough counts).
+-- Rebuilt with the other tables, so a reload never inherits stale counts.
+CREATE TABLE pipeline_meta (
+    key           TEXT PRIMARY KEY,
+    value         TEXT
+);
+
+-- Indexes are created by 05_load_to_sqlite.py after the bulk load, because
+-- maintaining them row by row during the insert is slower.

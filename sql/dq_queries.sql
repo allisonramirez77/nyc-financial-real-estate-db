@@ -117,3 +117,37 @@ SELECT r.run_id, r.run_at, d.check_id, d.rows_failed,
 FROM dq_results d
 JOIN dq_runs r ON r.run_id = d.run_id
 ORDER BY d.check_id, r.run_id;
+
+
+-- DQ9. Are the implausible $/sqft sales too cheap or too expensive, and do
+--      any look like portfolio sales?
+--      A portfolio sale is recorded on every lot it covers, so the same price
+--      and date appear on several lots in the borough. Side is judged against
+--      the average $/sqft of the sale's peer group (borough + building class).
+WITH flagged AS (
+    SELECT CAST(record_key AS INTEGER) AS sale_id
+    FROM dq_exceptions
+    WHERE run_id = (SELECT MAX(run_id) FROM dq_runs)
+      AND check_id = 'sales.price_per_sqft_outliers'
+),
+peers AS (
+    SELECT borough, building_class_category, AVG(sale_price / gross_sqft) AS avg_psf
+    FROM nyc_property_sales
+    GROUP BY borough, building_class_category
+),
+described AS (
+    SELECT s.sale_price / s.gross_sqft > p.avg_psf AS above_peers,
+           EXISTS (SELECT 1 FROM nyc_property_sales o
+                   WHERE o.borough = s.borough AND o.sale_date = s.sale_date
+                     AND o.sale_price = s.sale_price AND o.sale_id != s.sale_id)
+               AS shares_price_with_other_lots
+    FROM flagged f
+    JOIN nyc_property_sales s ON s.sale_id = f.sale_id
+    JOIN peers p ON p.borough = s.borough
+                AND p.building_class_category = s.building_class_category
+)
+SELECT CASE WHEN above_peers THEN 'too expensive' ELSE 'too cheap' END AS side,
+       COUNT(*)                          AS flagged,
+       SUM(shares_price_with_other_lots) AS same_price_on_other_lots
+FROM described
+GROUP BY side;

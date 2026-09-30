@@ -1,11 +1,11 @@
-# Phase 1 — local pipeline
+# Pipeline, data-quality checks and tests
 pandas>=2.0
 numpy>=1.24
-sqlalchemy>=2.0
-python-dotenv>=1.0
-jupyter>=1.0        # optional, for ad hoc exploration
-pytest>=8.0         # tests/ for the data-quality checks
+pytest>=8.0
 
-# Phase 2 — AWS (install only when you start the AWS migration)
+# 07_ingest_live_nyc_sales.py (NYC Open Data API)
+requests>=2.31
+
+# Planned cloud deployment, not yet used
 # boto3>=1.34
 # psycopg2-binary>=2.9

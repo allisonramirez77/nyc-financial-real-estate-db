@@ -3,7 +3,7 @@ Step 6: Build the dashboard.
 
 Queries the SQLite database and writes a single self-contained HTML file to
 output/dashboard.html — no external libraries, no internet needed. Open it in
-a browser (or commit it / screenshot it for your portfolio).
+any browser.
 
 Run:  python scripts/06_build_dashboard.py
 
@@ -77,7 +77,7 @@ def q_reit_index(cur):
 
 
 def q_psf_by_borough(cur):
-    """Median-ish (avg) price per square foot by borough, junk filtered."""
+    """Average price per square foot by borough, market sales only."""
     rows = cur.execute(
         "SELECT borough, AVG(sale_price / gross_sqft) AS psf, COUNT(*) AS n "
         "FROM nyc_property_sales "
@@ -430,14 +430,14 @@ card('NYC REIT performance',
               DATA.reitIndex[0].points.filter((_,i)=>i%21===0)));
 
 card('Average price per square foot by borough',
-     `Arm's-length sales only — records under $${fmt(10000)} or with zero square footage are excluded as nominal transfers.`,
+     `Sales of $${fmt(10000)} or more with recorded square footage. Lower prices are mostly nominal transfers, and condos and co-ops report no footage.`,
      '',
      el=>barChart(el, DATA.psfByBorough, {vfmt:v=>'$'+fmt(v,0)}),
      tableFor([{h:'Borough',get:r=>r.label},{h:'$/sqft',num:1,get:r=>'$'+fmt(r.value,0)},{h:'Sales',num:1,get:r=>fmt(r.n)}],
               DATA.psfByBorough));
 
 card('Monthly sale volume',
-     'Number of valid arm\'s-length property sales recorded per month across all five boroughs.',
+     'Qualifying property sales (at least $10,000, with square footage) per month across all five boroughs.',
      '',
      el=>lineChart(el, [{name:'Sales',points:DATA.monthlyVolume}], {xfmt:ym}),
      tableFor([{h:'Month',get:r=>ym(r.x)},{h:'Sales',num:1,get:r=>fmt(r.y)}], DATA.monthlyVolume));

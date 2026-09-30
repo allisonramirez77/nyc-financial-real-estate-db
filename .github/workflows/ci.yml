@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # The Kaggle source files aren't in the repo, so CI builds the database
+      # from the synthetic seed. It runs through the same ingest rules and
+      # plants one known defect per statistical check.
+      - name: Build demo database
+        run: python scripts/00_demo_seed.py
+
+      # Exits 1 if any critical check fails.
+      - name: Run data-quality checks
+        run: python scripts/08_run_data_quality.py
+
+      - name: Unit tests
+        run: python -m pytest tests/
+
+      # Every query must still parse and run against the schema.
+      - name: Run analysis queries
+        run: |
+          python -c "
+          import sqlite3
+          conn = sqlite3.connect('data/processed/financial_re.db')
+          for path in ('sql/queries.sql', 'sql/dq_queries.sql'):
+              conn.executescript(open(path).read())
+          "
+
+      - name: Build dashboard
+        run: python scripts/06_build_dashboard.py
