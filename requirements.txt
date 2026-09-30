@@ -1,0 +1,11 @@
+# Phase 1 — local pipeline
+pandas>=2.0
+numpy>=1.24
+sqlalchemy>=2.0
+python-dotenv>=1.0
+jupyter>=1.0        # optional, for ad hoc exploration
+pytest>=8.0         # tests/ for the data-quality checks
+
+# Phase 2 — AWS (install only when you start the AWS migration)
+# boto3>=1.34
+# psycopg2-binary>=2.9

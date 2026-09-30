@@ -1,0 +1,35 @@
+# Data (raw Kaggle downloads and processed DB — don't commit these)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Logs
+logs/*.log
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+venv/
+.venv/
+
+# Env / secrets
+.env
+
+# OS
+.DS_Store
+
+# Generated dashboard
+output/
+_to_delete/
+
+# Local working files — kept on disk, not part of the published project
+CLAUDE.md
+USING_CLAUDE_CODE.md
+STEPS.md
+WORKLOG.md
+.claude/
+skills/
+notebooks/
+prep/
